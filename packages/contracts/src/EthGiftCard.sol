@@ -15,7 +15,7 @@ contract EthGiftCard is ERC721, Ownable {
         uint256 gasCompensation;  // eth in wei
     }
 
-    mapping(uint256 => GiftCard) private giftcardInfo;
+    mapping(uint256 => GiftCard) private _giftCards;
 
     constructor() ERC721("ETH Gift Card", "GIFTCARD") {
         //
@@ -24,16 +24,37 @@ contract EthGiftCard is ERC721, Ownable {
     /**
      * Anyone can mint
      */
-    function mint() payable external {
+    function mint(
+        address receiver,
+        uint256 amount,
+        uint256 gasCompensation
+    ) payable external {
+        require(msg.value == amount + gasCompensation, "Incorrect ether value sent");
+
         _mintIndex = _mintIndex + 1;
-        _safeMint(msg.sender, _mintIndex);
+        _safeMint(receiver, _mintIndex);
+
+        GiftCard memory giftCard;
+        giftCard.amount = amount;
+        giftCard.gasCompensation = gasCompensation;
+        _giftCards[_mintIndex] = giftCard;
     }
 
     /**
      * Owner can burn, and get eth
      */
-    function burn() external {
-        //
+    function burn(uint256 tokenId) external {
+        address owner = ownerOf(tokenId);
+        require(msg.sender == owner, "Burn caller is not owner");
+
+        uint256 amount = _giftCards[tokenId].amount;
+        // uint256 gasCompensation = _giftCards[tokenId].gasCompensation;
+
+        _burn(tokenId);
+        delete _giftCards[tokenId];
+
+        payable(address(owner)).transfer(amount);
+        // gasCompensation;
     }
 
 }
