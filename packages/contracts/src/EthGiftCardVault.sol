@@ -21,7 +21,7 @@ contract EthGiftCardVault {
         require(msg.value == amount + gasCompensation, "Incorrect ether value sent");
 
         giftCard = new EthGiftCardItem(receiver, amount, gasCompensation);
-        giftCard.mint{value: msg.value}();
+        payable(address(giftCard)).transfer(msg.value);
     }
 
 }
