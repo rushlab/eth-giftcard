@@ -2,6 +2,7 @@
 pragma solidity 0.8.11;
 
 import "./EthGiftCardItem.sol";
+import "./Proxy.sol";
 
 
 contract EthGiftCardVault {
@@ -14,14 +15,18 @@ contract EthGiftCardVault {
     function mint(
         address receiver,
         uint256 amount,
-        uint256 gasCompensation
+        uint256 gasCompensation,
+        address implementation
     ) payable external returns (
-        EthGiftCardItem giftCard
+        address proxyAddress
     ) {
         require(msg.value == amount + gasCompensation, "Incorrect ether value sent");
 
-        giftCard = new EthGiftCardItem(receiver, amount, gasCompensation);
-        payable(address(giftCard)).transfer(msg.value);
+        Proxy giftCardProxy = new Proxy(implementation);
+        proxyAddress = address(giftCardProxy);
+
+        EthGiftCardItem giftCardItem = EthGiftCardItem(proxyAddress);
+        giftCardItem.initialize{value: msg.value}(receiver, amount, gasCompensation);
     }
 
 }
