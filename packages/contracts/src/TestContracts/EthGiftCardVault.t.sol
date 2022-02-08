@@ -6,6 +6,7 @@ import { stdCheats } from "forge-std/stdlib.sol";
 
 import "../EthGiftCardVault.sol";
 import "../EthGiftCardItem.sol";
+import "../Proxy.sol";
 
 
 contract EthGiftCardVaultTest is DSTest, stdCheats {
